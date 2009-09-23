@@ -13,7 +13,7 @@ which inspired org-babel-screen.
   #+begin_src screen :session sender :results silent
     {
      echo hi
-     slep 1
+     sleep 1
      echo bye
      sleep 1
     } | netcat -c localhost 1234
