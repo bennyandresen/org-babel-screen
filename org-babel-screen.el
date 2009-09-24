@@ -31,6 +31,9 @@
 ;;
 ;; Adding :cmd and :terminal as header arguments
 ;; :terminal must support the -T (title) and -e (command) parameter
+;;
+;; You can test the default setup. (xterm + sh) with
+;; M-x org-babel-screen-test RET
 
 ;;; Code:
 (require 'org-babel)
@@ -48,7 +51,7 @@
 \"default\" session is be used when none is specified."
   (message "Sending source code block to interactive terminal session...")
   (save-window-excursion
-    (let ((socket (org-babel-screen-session-socketname session)) foo)
+    (let ((socket (org-babel-screen-session-socketname session)))
       (unless socket (org-babel-prep-session:screen session params))
       (org-babel-screen-session-execute-string session body))))
 
@@ -103,6 +106,29 @@
       (goto-char (point-min))
       (delete-matching-lines "^ +$"))
     tmpfile))
+
+(defun org-babel-screen-test ()
+  "Command that tests if the default setup works. 
+The terminal should shortly flicker."
+  (interactive)
+  (let* ((session "org-babel-testing")
+         (random-string (format "%s" (random 99999)))
+         (tmpfile "/tmp/org-babel-screen.test")
+         (body (concat "echo '" random-string "' > " tmpfile "\nexit\n"))
+         process tmp-string)
+    (org-babel-execute:screen body org-babel-default-header-args:screen)
+    ;; XXX: need to find a better way to do the following
+    (while (not (file-readable-p tmpfile))
+      ;; do something, otherwise this will be optimized away
+      (format "org-babel-screen: File not readable yet."))
+    (setq tmp-string (with-temp-buffer
+                       (insert-file-contents-literally tmpfile)
+                       (buffer-substring (point-min) (point-max))))
+    (delete-file tmpfile)
+    (message (concat "org-babel-screen: Setup "
+                     (if (string-match random-string tmp-string)
+                         "WORKS."
+                         "DOESN'T work.")))))
 
 (provide 'org-babel-screen)
 ;;; org-babel-screen.el ends here
