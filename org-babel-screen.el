@@ -28,6 +28,9 @@
 
 ;; Org-Babel support for interactive terminals. Mostly shell scripts.
 ;; Heavily inspired by 'eev' from Eduardo Ochs
+;;
+;; Adding :cmd and :terminal as header arguments
+;; :terminal must support the -T (title) and -e (command) parameter
 
 ;;; Code:
 (require 'org-babel)
@@ -45,8 +48,8 @@
 \"default\" session is be used when none is specified."
   (message "Sending source code block to interactive terminal session...")
   (save-window-excursion
-    (let ((socket (org-babel-screen-session-socketname session)))
-      (unless socket (progn (org-babel-prep-session:screen session params) (sleep-for 1)))
+    (let ((socket (org-babel-screen-session-socketname session)) foo)
+      (unless socket (org-babel-prep-session:screen session params))
       (org-babel-screen-session-execute-string session body))))
 
 (defun org-babel-prep-session:screen (session params)
@@ -54,11 +57,16 @@
   (let* ((socket (org-babel-screen-session-socketname session))
          (vars (org-babel-ref-variables params))
          (cmd (cdr (assoc :cmd params)))
-         (terminal (cdr (assoc :terminal params))))
-    (apply 'start-process (concat "org-babel: terminal (" session ")") "*Messages*"
+         (terminal (cdr (assoc :terminal params)))
+         (process-name (concat "org-babel: terminal (" session ")")))
+    (apply 'start-process process-name "*Messages*"
            terminal `("-T" ,(concat "org-babel: " session) "-e" "screen"
-                                      "-c" "/dev/null" "-mS" ,(concat "org-babel-session-" session)
-                                      ,cmd))))
+                           "-c" "/dev/null" "-mS" ,(concat "org-babel-session-" session)
+                           ,cmd))
+    ;; XXX: Is there a better way than the following?
+    (while (not (org-babel-screen-session-socketname session))
+      ;; wait until screen session is available before returning
+      )))
 
 ;; helper functions
 

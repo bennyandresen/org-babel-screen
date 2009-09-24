@@ -1,5 +1,5 @@
-# -*- mode: org; fill-column: 78; org-clock-in-switch-to-state: nil; -*-
-#+STARTUP: content lognotestate hidestars odd
+# -*- mode: org; fill-column: 78; -*-
+#+STARTUP: showall hidestars odd
 
 Example taken from http://angg.twu.net/eev-current/anim/channels.anim.html
 which inspired org-babel-screen.
