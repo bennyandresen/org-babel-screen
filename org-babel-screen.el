@@ -42,6 +42,10 @@
 
 (add-to-list 'org-src-lang-modes '("screen" . sh))
 
+(defvar org-babel-screen-location "screen"
+  "The command location for screen. 
+In case you want to use a different screen than one selected by your $PATH")
+
 (defvar org-babel-default-header-args:screen
   '((:results . "silent") (:session . "default") (:cmd . "sh") (:terminal . "xterm"))
   "Default arguments to use when running screen source blocks.")
@@ -63,7 +67,7 @@
          (terminal (cdr (assoc :terminal params)))
          (process-name (concat "org-babel: terminal (" session ")")))
     (apply 'start-process process-name "*Messages*"
-           terminal `("-T" ,(concat "org-babel: " session) "-e" "screen"
+           terminal `("-T" ,(concat "org-babel: " session) "-e" org-babel-screen-location
                            "-c" "/dev/null" "-mS" ,(concat "org-babel-session-" session)
                            ,cmd))
     ;; XXX: Is there a better way than the following?
@@ -79,9 +83,10 @@
     (when socket
       (let ((tmpfile (org-babel-screen-session-write-temp-file session body)))
         (apply 'start-process (concat "org-babel: screen (" session ")") "*Messages*"
-               "screen" `("-S" ,socket "-X" "eval" "msgwait 0"
-                               ,(concat "readreg z " tmpfile)
-                               "paste z"))))))
+               org-babel-screen-location
+               `("-S" ,socket "-X" "eval" "msgwait 0"
+                      ,(concat "readreg z " tmpfile)
+                      "paste z"))))))
 
 (defun org-babel-screen-session-socketname (session)
   "Check if SESSION exist by parsing output of \"screen -ls\"."
