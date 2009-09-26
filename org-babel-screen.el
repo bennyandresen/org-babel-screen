@@ -67,7 +67,7 @@ In case you want to use a different screen than one selected by your $PATH")
          (terminal (cdr (assoc :terminal params)))
          (process-name (concat "org-babel: terminal (" session ")")))
     (apply 'start-process process-name "*Messages*"
-           terminal `("-T" ,(concat "org-babel: " session) "-e" org-babel-screen-location
+           terminal `("-T" ,(concat "org-babel: " session) "-e" ,org-babel-screen-location
                            "-c" "/dev/null" "-mS" ,(concat "org-babel-session-" session)
                            ,cmd))
     ;; XXX: Is there a better way than the following?
